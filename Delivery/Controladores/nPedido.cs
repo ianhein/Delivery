@@ -89,7 +89,7 @@ namespace Delivery.Controladores
             DateTime fechaFinal = Herramientas.IngresoFecha();
             Console.Clear();
             string[,] tabla = new string[Program.pedidos.Count + 1, 3];
-            tabla[0, 0] = "idPedido ";
+            tabla[0, 0] = "idPedido";
             tabla[0, 1] = "Fecha";
 
             foreach (Pedido p in pPedido.ListarPedidosEntreFechas(fechaInicial,fechaFinal))
