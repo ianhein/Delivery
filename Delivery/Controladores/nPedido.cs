@@ -83,25 +83,29 @@ namespace Delivery.Controladores
 
         public static void ListarDosFechasPedidos()
         {
+            Console.Clear();
             Console.WriteLine("Ingrese la fecha inicial: ");
             DateTime fechaInicial = Herramientas.IngresoFecha();
             Console.WriteLine("Ingrese la fecha final: ");
             DateTime fechaFinal = Herramientas.IngresoFecha();
             Console.Clear();
-            string[,] tabla = new string[Program.pedidos.Count + 1, 3];
-            tabla[0, 0] = "idPedido";
+
+            var pedidos = pPedido.ListarPedidosEntreFechas(fechaInicial, fechaFinal);
+            string[,] tabla = new string[pedidos.Count + 1, 2];
+            tabla[0, 0] = "Pedido";
             tabla[0, 1] = "Fecha";
 
-            foreach (Pedido p in pPedido.ListarPedidosEntreFechas(fechaInicial,fechaFinal))
+            for (int i = 0; i < pedidos.Count; i++)
             {
-                tabla[Program.pedidos.IndexOf(p) + 1, 0] = p.Id.ToString();
-                tabla[Program.pedidos.IndexOf(p) + 1, 1] = p.Fecha.ToString();
-               
+                var p = pedidos[i];
+                tabla[i + 1, 0] = p.Id.ToString();
+                tabla[i + 1, 1] = p.Fecha.ToString("M/d/yyyy");
             }
-            Herramientas.DibujaTabla(tabla);
 
+            Herramientas.DibujaTabla(tabla);
             Console.ReadLine();
         }
+
 
         public static int Seleccionar()
         {
