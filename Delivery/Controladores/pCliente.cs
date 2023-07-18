@@ -50,6 +50,36 @@ namespace Delivery.Controladores
             }   
         }
 
+        public static List<Cliente> ListarMayorMenor()
+        {
+            List<Cliente> clientes = new List<Cliente>();
+            SQLiteCommand cmd = new SQLiteCommand("SELECT p.MontoTotalComprado, c.Nombre, c.Apellido FROM Pedido p JOIN Cliente c ON c.Id = p.IdCliente ORDER BY p.MontoTotalComprado DESC");
+            cmd.Connection = Conexion.Connection;
+            if (cmd.Connection.State != System.Data.ConnectionState.Open) // verifica si la conexión ya está abierta
+            {
+                cmd.Connection.Open();
+            }
+            SQLiteDataReader obdr = cmd.ExecuteReader();
+            while (obdr.Read())
+            {
+                Cliente c = new Cliente();
+                Pedido p = new Pedido();
+                c.Nombre = obdr.GetString(1);
+                c.Apellido = obdr.GetString(2);
+                p.MontoTotal= obdr.GetDouble(0);
+
+                Console.WriteLine($"Nombre: {obdr.GetString(0)}, Apellido: {obdr.GetString(1)}, MontoTotalComprado: {obdr.GetDouble(2)},");
+                clientes.Add(c);
+
+            }
+            if (cmd.Connection.State != System.Data.ConnectionState.Closed) // verifica si la conexión ya está cerrada
+            {
+                cmd.Connection.Close();
+            }
+            return clientes;
+
+        }
+
         public static void Crear(Cliente c)
         {
 

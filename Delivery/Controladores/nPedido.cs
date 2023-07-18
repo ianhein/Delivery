@@ -13,6 +13,7 @@ namespace Delivery.Controladores
     {
         public static void Crear()
         {
+            Console.Clear();
             bool creacionExitosa = false;
             do
             {
@@ -24,7 +25,7 @@ namespace Delivery.Controladores
                     Console.WriteLine("Ingrese la fecha del pedido: ");
                     try
                     {
-                        p.Fecha = DateTime.Parse(Console.ReadLine());
+                        p.Fecha = Herramientas.IngresoFecha();
                     }
                     catch (FormatException)
                     {
@@ -46,23 +47,8 @@ namespace Delivery.Controladores
                         continue;
                     }
 
-                    bool maspedidos = false;
-                    do
-                    {
-                        maspedidos = false;
-                        Console.WriteLine("Ingrese el item del pedido: ");
-                        int mt = nMenuItem.Seleccionar();
-                        pPedido.SavePedidoItem(p, Program.menuItems[mt]);
-
-                        Console.WriteLine("Desea agregar otro item? (S/N)");
-                        string resp = Console.ReadLine();
-                        if (resp.ToUpper() == "S")
-                        {
-                            maspedidos = true;
-                        }
-                    } while (maspedidos);
-
                     creacionExitosa = true;
+                    pPedido.Save(p);
                 }
                 catch (Exception ex)
                 {
@@ -73,30 +59,54 @@ namespace Delivery.Controladores
 
 
 
-        public static void Listar()
+        public static void Listar(bool pausa = true)
         {
             Console.Clear();
-            string[,] tabla = new string[Program.pedidos.Count + 1, 4];
-            tabla[0, 0] = "Id";
-            tabla[0, 1] = "Fecha";
-            tabla[0, 2] = "Cliente";
-            tabla[0, 3] = "Monto Total";
+            string[,] tabla = new string[Program.pedidos.Count + 1, 3];
+            tabla[0, 0] = "Fecha";
+            tabla[0, 1] = "Cliente";
+            tabla[0, 2] = "Monto Total";
 
             foreach (var item in Program.pedidos)
             {
-                tabla[Program.pedidos.IndexOf(item) + 1, 0] = (Program.pedidos.IndexOf(item) + 1).ToString();
-                tabla[Program.pedidos.IndexOf(item) + 1, 1] = item.Fecha.ToString();
-                tabla[Program.pedidos.IndexOf(item) + 1, 2] = item.Cliente.Nombre + " " + item.Cliente.Apellido;
-                tabla[Program.pedidos.IndexOf(item) + 1, 3] = "$ " + item.MontoTotal.ToString();
+                tabla[Program.pedidos.IndexOf(item) + 1, 0] = item.Fecha.ToString();
+                tabla[Program.pedidos.IndexOf(item) + 1, 1] = item.Cliente.Nombre + " " + item.Cliente.Apellido;
+                tabla[Program.pedidos.IndexOf(item) + 1, 2] = "$" + item.MontoTotal.ToString();
             }
             Herramientas.DibujaTabla(tabla);
             Console.ReadKey();
+            if (pausa)
+            {
+                Console.ReadLine();
+            }
+        }
+
+        public static void ListarDosFechasPedidos()
+        {
+            Console.WriteLine("Ingrese la fecha inicial: ");
+            DateTime fechaInicial = Herramientas.IngresoFecha();
+            Console.WriteLine("Ingrese la fecha final: ");
+            DateTime fechaFinal = Herramientas.IngresoFecha();
+            Console.Clear();
+            string[,] tabla = new string[Program.pedidos.Count + 1, 3];
+            tabla[0, 0] = "idPedido ";
+            tabla[0, 1] = "Fecha";
+
+            foreach (Pedido p in pPedido.ListarPedidosEntreFechas(fechaInicial,fechaFinal))
+            {
+                tabla[Program.pedidos.IndexOf(p) + 1, 0] = p.Id.ToString();
+                tabla[Program.pedidos.IndexOf(p) + 1, 1] = p.Fecha.ToString();
+               
+            }
+            Herramientas.DibujaTabla(tabla);
+
+            Console.ReadLine();
         }
 
         public static int Seleccionar()
         {
             int i = 0;
-            Listar();
+            Listar(false);
             Console.WriteLine("Ingrese el id del pedido: ");
             i = Herramientas.IngresoEnteros(1, Program.pedidos.Count);
             return i - 1;
@@ -104,10 +114,29 @@ namespace Delivery.Controladores
 
         public static void Eliminar()
         {
+            Console.Clear();
+            Console.WriteLine("Apriete cualquier tecla para continuar...");
             try
             {
                 int i = Seleccionar();
                 pPedido.Delete(Program.pedidos[i]);
+                Console.WriteLine("Pedido eliminado con éxito.");
+                Console.ReadLine();
+                Console.WriteLine("Desea eliminar otro pedido? (S/N)");
+                string resp = Console.ReadLine();
+                if (resp.ToUpper() == "S")
+                {
+                    Eliminar();
+                }
+                else if (resp.ToUpper() == "N")
+                {
+                    Menu();
+                }
+                else
+                {
+                    Console.WriteLine("Respuesta no válida. Por favor, ingrese S o N.");
+                    Eliminar();
+                }
             }
             catch (Exception ex)
             {
@@ -116,23 +145,69 @@ namespace Delivery.Controladores
             }
         }
 
+        public static void Modificar()
+        {
+            Listar(false);
+            Console.WriteLine("Ingrese el ID del pedido que desea modificar: ");
+            int idPedido = int.Parse(Console.ReadLine()); 
+
+            Pedido p = Program.pedidos.FirstOrDefault(pedido => pedido.Id == idPedido);
+
+            if (p != null) 
+            {
+                Console.WriteLine("Ingrese la nueva fecha del pedido: ");
+                try
+                {
+                    p.Fecha = Herramientas.IngresoFecha();
+                }
+                catch (FormatException)
+                {
+                    Console.WriteLine("Fecha no válida. Por favor, ingrese una fecha en el formato correcto.");
+                    return;
+                }
+
+                Console.WriteLine("Ingrese el nuevo monto total del pedido: ");
+                try
+                {
+                    p.MontoTotal = double.Parse(Console.ReadLine());
+                }
+                catch (FormatException)
+                {
+                    Console.WriteLine("Monto total no válido. Por favor, ingrese un número.");
+                    return;
+                }
+
+                pPedido.Modify(p);
+            }
+            else
+            {
+                Console.WriteLine("No se encontró un pedido con ese ID. Por favor, intente de nuevo.");
+            }
+        }
+
+
 
         public static void Menu()
         {
             Console.Clear();
-            string[] opciones = new string[4];
+            string[] opciones = new string[6];
             opciones[0] = "Crear Pedido";
             opciones[1] = "Listar Pedidos";
             opciones[2] = "Eliminar Pedidos";
-            opciones[3] = "Salir";
+            opciones[3] = "Modificar Pedidos";
+            opciones[4] = "Lista por dos fechas ";
+            opciones[5] = "Salir";
 
             Herramientas.DibujoMenu("Menu Pedidos", opciones);
-            int op = Herramientas.IngresoEnteros(1, 5);
+            int op = Herramientas.IngresoEnteros(1, 6);
 
             switch (op)
             {
                 case 1:
                     Crear();
+                    Console.ReadLine();
+                    Menu();
+
                     break;
                 case 2:
                     Listar();
@@ -142,6 +217,12 @@ namespace Delivery.Controladores
                     Eliminar();
                     break;
                 case 4:
+                    Modificar();
+                    Menu();
+                    break;
+                case 5:
+                    ListarDosFechasPedidos();
+                    Menu();
                     break;
             }
 

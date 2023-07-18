@@ -52,6 +52,7 @@ namespace Delivery.Controladores
                     }
                     pMenuItem.Save(m);
                     Console.WriteLine("Item creado con éxito.");
+                    pMenuItem.GetAll();
                     bool masitems = false;
                     do
                     {
@@ -87,17 +88,15 @@ namespace Delivery.Controladores
 
         public static void Listar()
         {
-            string[,] tabla = new string[Program.menuItems.Count + 1, 4];
-            tabla[0, 0] = "Id";
-            tabla[0, 1] = "Nombre";
-            tabla[0, 2] = "Descripcion";
-            tabla[0, 3] = "Precio";
+            string[,] tabla = new string[Program.menuItems.Count + 1, 3];
+            tabla[0, 0] = "Nombre";
+            tabla[0, 1] = "Descripcion";
+            tabla[0, 2] = "Precio";
             foreach (MenuItem m in Program.menuItems)
             {
-                tabla[Program.menuItems.IndexOf(m) + 1, 0] = (Program.menuItems.IndexOf(m) + 1).ToString();
-                tabla[Program.menuItems.IndexOf(m) + 1, 1] = m.Nombre;
-                tabla[Program.menuItems.IndexOf(m) + 1, 2] = m.Descripcion;
-                tabla[Program.menuItems.IndexOf(m) + 1, 3] = m.Precio.ToString();
+                tabla[Program.menuItems.IndexOf(m) + 1, 0] = m.Nombre;
+                tabla[Program.menuItems.IndexOf(m) + 1, 1] = m.Descripcion;
+                tabla[Program.menuItems.IndexOf(m) + 1, 2] = m.Precio.ToString();
             }
             Herramientas.DibujaTabla(tabla);
         }

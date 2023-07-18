@@ -88,7 +88,6 @@ namespace Delivery.Controladores
 
         public static void Listar(bool pausa = true)
         {
-
             string[,] tabla = new string[Program.clientes.Count + 1, 3];
             tabla[0, 0] = "Id";
             tabla[0, 1] = "Nombre Completo";
@@ -197,15 +196,55 @@ namespace Delivery.Controladores
 
         }
 
+        public static List<Pedido> GetPedidosByCliente(Cliente c)
+        {
+            return Program.pedidos.Where(p => p.Cliente.IdCliente == c.IdCliente).ToList();
+        }
+
+
+        public static void ListarMonto(bool pausa = true)
+        {
+            string[,] tabla = new string[Program.clientes.Count + 1, 4];
+            tabla[0, 0] = "Id";
+            tabla[0, 1] = "Nombre Completo";
+            tabla[0, 2] = "Direccion";
+            tabla[0, 3] = "MontoTotalComprado";
+
+            foreach (Cliente c in Program.clientes)
+            {
+                List<Pedido> pedidosCliente = GetPedidosByCliente(c);
+
+                tabla[Program.clientes.IndexOf(c) + 1, 0] = (Program.clientes.IndexOf(c) + 1).ToString();
+                tabla[Program.clientes.IndexOf(c) + 1, 1] = c.Nombre + " " + c.Apellido;
+                tabla[Program.clientes.IndexOf(c) + 1, 2] = c.Direccion;
+                double montoTotal = 0;
+
+                foreach (Pedido p in pedidosCliente)
+                {
+                    montoTotal += p.MontoTotal;
+                }
+
+                tabla[Program.clientes.IndexOf(c) + 1, 3] = montoTotal.ToString();
+            }
+            Herramientas.DibujaTabla(tabla);
+            if (pausa)
+            {
+                Console.ReadLine();
+            }
+        }
+
+
+
         public static void Menu()
         {
             Console.Clear();
-            string[] opciones = new string[5];
+            string[] opciones = new string[6];
             opciones[0] = "Crear Cliente";
             opciones[1] = "Listar Clientes";
             opciones[2] = "Eliminar Cliente";
             opciones[3] = "Modificar Cliente";
-            opciones[4] = "Salir";
+            opciones[4] = "Listar clientes de mayor a menor por monto total";
+            opciones[5] = "Salir";
 
             Herramientas.DibujoMenu("Menu Clientes", opciones);
             int op = Herramientas.IngresoEnteros(1, 5);
@@ -238,7 +277,9 @@ namespace Delivery.Controladores
                     }
                     Menu();
                     break;
-                default:
+                case 5:
+                    ListarMonto();
+                    Menu();
                     break;
             }
 
